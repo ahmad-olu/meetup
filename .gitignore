@@ -1,0 +1,14 @@
+/postgres_data
+/sqlite_data
+session.cookies
+help.md
+surreal_data
+tiger_beetle_data
+/PRIVATE-DOCS
+/TODOS
+/notes
+/mailpit_data
+/qdrant_storage
+/surrealdb_data
+.env
+---.yml

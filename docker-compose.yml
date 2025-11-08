@@ -1,0 +1,55 @@
+services:
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
+
+  redis1:
+    image: redis:6.2.6
+    # container_name: redis1
+    ports:
+      - "8091:6379"
+    command: sh -c "redis-server --requirepass \"$${REDIS_1_PASSWORD}\""
+    environment:
+      - REDIS_REPLICATION_MODE=master
+      - REDIS_PASSWORD=${REDIS_1_PASSWORD}
+
+  redis2:
+    image: redis:6.2.6
+    # container_name: redis2
+    ports:
+      - "8092:6379"
+    command: sh -c "redis-server --requirepass \"$${REDIS_2_PASSWORD}\""
+    environment:
+      - REDIS_REPLICATION_MODE=master
+      - REDIS_PASSWORD=${REDIS_2_PASSWORD}
+
+  mailpit1:
+    image: axllent/mailpit
+    # container_name: mailpit1
+    restart: unless-stopped
+    volumes:
+      - ./mailpit_data:/data
+    ports:
+      - 8025:8025
+      - 1025:1025
+    environment:
+      MP_MAX_MESSAGES: 5000
+      MP_DATABASE: /data/mailpit.db
+      MP_SMTP_AUTH_ACCEPT_ANY: 1
+      MP_SMTP_AUTH_ALLOW_INSECURE: 1
+
+  qdrant:
+    image: qdrant/qdrant
+    # container_name: qdrant
+    ports:
+      - "5783:6333"
+      - "5784:6334"
+    volumes:
+      - ./qdrant_storage:/qdrant/storage:z
+    restart: unless-stopped
