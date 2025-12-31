@@ -133,6 +133,8 @@ export const events = pgTable("events", {
 	venueDetails: text("venue_details"),
 	createdAt: timestamp("created_at").default(sql`now()`),
 	updatedAt: timestamp("updated_at").default(sql`now()`),
+	currency: text().default("NGN").notNull(),
+	currencySymbol: text("currency_symbol").default("₦").notNull(),
 }, (table) => [
 	index("idx_events_date").using("btree", table.proposedDate.asc().nullsLast()),
 	index("idx_events_location").using("btree", table.locationId.asc().nullsLast()),

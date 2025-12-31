@@ -1,36 +1,60 @@
 import { form, getRequestEvent, query } from '$app/server';
 import { db } from '$lib/db';
-import { error } from '@sveltejs/kit';
+import { error, redirect } from '@sveltejs/kit';
 import { and, ilike, eq, count, sql, asc } from 'drizzle-orm';
 import * as z from 'zod';
 import { eventOrganizers, events, locations } from '../../../drizzle/schema';
-
-const DayOfWeek = {
-	wednesday: 'wednesday',
-	saturday: 'saturday'
-} as const;
 
 export const propose_event = form(
 	z.object({
 		title: z.string().min(1, 'Title is required'),
 		description: z.string().min(1, 'Description is required'),
-		locationId: z.string(),
-		categoryId: z.string(),
-		proposedDate: z.string().datetime(), // Keep as string, don't transform
-		dayOfWeek: z.nativeEnum(DayOfWeek),
+		locationId: z
+			.string()
+			.trim()
+			.min(1, 'Location is required')
+			.refine((v) => v.toLowerCase() !== 'nil', {
+				message: 'Invalid location'
+			}),
+		categoryId: z
+			.string()
+			.trim()
+			.min(1, 'Category is required')
+			.refine((v) => v.toLowerCase() !== 'nil', {
+				message: 'Invalid Category'
+			}),
+		proposedDate: z.string().refine(
+			(val) => {
+				const day = new Date(val).getDay();
+				return day === 3 || day === 6; //|| day === 0
+			},
+			{
+				message: 'Only Wednesdays, Saturdays and Sundays are allowed'
+			}
+		), // Keep as string, don't transform
+		// dayOfWeek: z.nativeEnum(DayOfWeek),
 		startTime: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)(:[0-5]\d)?$/, 'Invalid time format'),
 		endTime: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)(:[0-5]\d)?$/, 'Invalid time format'),
 		minVotesRequired: z.number().min(5),
-		votingDeadline: z.string().datetime(), // Keep as string
-		requiresFunding: z
-			.union([z.literal('true'), z.literal('false')])
-			.transform((v) => v === 'true'),
-		venueDetails: z.string().max(2000).optional(),
+		votingDeadline: z.string(), // Keep as string
+		// requiresFunding: z
+		// 	.union([z.literal('true'), z.literal('false')])
+		// 	.transform((v) => v === 'true'),
+		venueDetails: z.string().max(2000),
+		currency: z.string().max(3).default('NGN'),
+		currencySymbol: z.string().max(1).default('₦'),
 		fundingGoal: z
-			.string()
-			.regex(/^\d{1,8}(\.\d{1,2})?$/, 'Invalid decimal (10,2)')
-			.default('0.00')
-			.transform(Number)
+			.number()
+			.min(0, 'Amount cannot be negative')
+			.max(99999999.99, 'Amount too large')
+			.default(0)
+			.refine(
+				(v) => {
+					const decimalPlaces = (v.toString().split('.')[1] || '').length;
+					return decimalPlaces <= 2;
+				},
+				{ message: 'Maximum 2 decimal places allowed' }
+			)
 	}),
 	async ({
 		title,
@@ -38,22 +62,35 @@ export const propose_event = form(
 		locationId,
 		categoryId,
 		proposedDate,
-		dayOfWeek,
 		startTime,
 		endTime,
 		minVotesRequired,
 		votingDeadline,
-		status,
-		requiresFunding,
+		venueDetails,
 		fundingGoal,
-		venueDetails
+		currency,
+		currencySymbol
 	}) => {
+		console.log('got here 1');
+
 		const event = getRequestEvent();
 		if (!event.locals.user) {
 			error(401, 'Unauthorized');
 		}
 		//const slug = title.toLowerCase().replace(/ /g, '-');
 
+		//TODO: get funding currency
+
+		const dayOfWeek = (proposedDate: string) => {
+			const day = new Date(proposedDate).getDay();
+			//	if (day === 0) return 'sunday';
+			if (day === 3) return 'wednesday';
+			if (day === 6) return 'saturday';
+
+			return 'wednesday';
+		};
+
+		//	try {
 		await db.transaction(async (tx) => {
 			const [eventRes] = await tx
 				.insert(events)
@@ -61,7 +98,7 @@ export const propose_event = form(
 					title,
 					description,
 					proposedDate,
-					dayOfWeek,
+					dayOfWeek: dayOfWeek(proposedDate),
 					votingDeadline: new Date(votingDeadline), // Convert to Date for timestamp()
 					locationId,
 					categoryId,
@@ -69,10 +106,12 @@ export const propose_event = form(
 					endTime,
 					minVotesRequired,
 					status: 'proposed',
-					requiresFunding,
-					venueDetails,
+					requiresFunding: fundingGoal > 0,
 					fundingGoal,
-					creatorId: event.locals.user!.id!
+					currency,
+					currencySymbol,
+					creatorId: event.locals.user!.id!,
+					venueDetails: venueDetails || null
 				})
 				.returning({ id: events.id });
 
@@ -82,7 +121,11 @@ export const propose_event = form(
 				eventId: eventRes.id
 			});
 		});
-		// redirect(303, '/');
+		// } catch (error: unknown) {
+		// 	console.error(error);
+		// 	return;
+		// }
+		redirect(303, '/');
 	}
 );
 

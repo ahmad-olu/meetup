@@ -11,11 +11,13 @@ const PUBLIC_ROUTES = [
 	'/about',
 	'/faq',
 	'/privacy-policy',
-	'/terms-and-condition'
+	'/terms-and-condition',
+	'/how-it-works'
 ];
 
 export const load = async ({ locals, url }) => {
-	const isPublic = PUBLIC_ROUTES.some((path) => url.pathname.startsWith(path));
+	const isPublic =
+		url.pathname === '/' || PUBLIC_ROUTES.some((path) => url.pathname.startsWith(path));
 
 	if (!locals.user && !isPublic) {
 		throw redirect(307, resolve('/signin'));
