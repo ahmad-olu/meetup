@@ -1,12 +1,7 @@
 <script lang="ts">
 	import '../../app.css';
 	import favicon from '$lib/assets/favicon.svg';
-	import * as NavigationMenu from '$lib/components/ui/navigation-menu/index.js';
-	import { cn } from '$lib/utils.js';
-	import { navigationMenuTriggerStyle } from '$lib/components/ui/navigation-menu/navigation-menu-trigger.svelte';
-	import type { HTMLAttributes } from 'svelte/elements';
-	import { Button, buttonVariants } from '$lib/components/ui/button/index.js';
-	import * as AlertDialog from '$lib/components/ui/alert-dialog/index.js';
+
 	import PublicNav from './PublicNav.svelte';
 	import StandardNav from './StandardNav.svelte';
 

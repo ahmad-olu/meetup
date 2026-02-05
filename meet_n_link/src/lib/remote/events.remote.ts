@@ -91,7 +91,7 @@ export const propose_event = form(
 		};
 
 		//	try {
-		await db.transaction(async (tx) => {
+		const res = await db.transaction(async (tx) => {
 			const [eventRes] = await tx
 				.insert(events)
 				.values({
@@ -120,12 +120,14 @@ export const propose_event = form(
 				role: 'creator',
 				eventId: eventRes.id
 			});
+
+			return eventRes;
 		});
 		// } catch (error: unknown) {
 		// 	console.error(error);
 		// 	return;
 		// }
-		redirect(303, '/');
+		redirect(303, `/events/${res.id}`);
 	}
 );
 

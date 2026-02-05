@@ -1,128 +1,57 @@
 <script lang="ts">
 	import '../../app.css';
-	import favicon from '$lib/assets/favicon.svg';
-	import * as NavigationMenu from '$lib/components/ui/navigation-menu/index.js';
-	import { cn } from '$lib/utils.js';
-	import { navigationMenuTriggerStyle } from '$lib/components/ui/navigation-menu/navigation-menu-trigger.svelte';
-	import type { HTMLAttributes } from 'svelte/elements';
-	import { Button, buttonVariants } from '$lib/components/ui/button/index.js';
-	import * as AlertDialog from '$lib/components/ui/alert-dialog/index.js';
-
 	import { resolve } from '$app/paths';
 
-	type ListItemProps = HTMLAttributes<HTMLAnchorElement> & {
-		title: string;
-		href: string;
-		content: string;
-	};
+	let helpOpen = false;
 </script>
 
-{#snippet ListItem({ title, content, href, class: className, ...restProps }: ListItemProps)}
-	<li>
-		<NavigationMenu.Link>
-			{#snippet child()}
-				<a
-					{href}
-					class={cn(
-						'block space-y-1 rounded-md p-3 leading-none no-underline transition-colors outline-none select-none hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground',
-						className
-					)}
-					{...restProps}
-				>
-					<div class="text-sm leading-none font-medium">{title}</div>
-					<p class="line-clamp-2 text-sm leading-snug text-muted-foreground">
-						{content}
-					</p>
+<header class="border-b border-slate-200 bg-white">
+	<div class="mx-auto max-w-7xl px-4">
+		<nav class="flex h-14 items-center justify-between text-sm text-slate-700">
+			<div class="flex items-center gap-4">
+				<a href={resolve('/')} class="rounded-md px-2 py-1 hover:bg-slate-100"> Home </a>
+
+				<a href={resolve('/(public)/how-it-works')} class="rounded-md px-2 py-1 hover:bg-slate-100">
+					How it works
 				</a>
-			{/snippet}
-		</NavigationMenu.Link>
-	</li>
-{/snippet}
 
-<div class="mb- mt-5 flex justify-center">
-	<NavigationMenu.Root>
-		<!-- <NavigationMenu.Root viewport={isMobile.current}> -->
-		<NavigationMenu.List class="flex-wrap">
-			<NavigationMenu.Item>
-				<NavigationMenu.Link>
-					{#snippet child()}
-						<a href={resolve('/')} class={navigationMenuTriggerStyle()}>Home</a>
-					{/snippet}
-				</NavigationMenu.Link>
-			</NavigationMenu.Item>
+				<div class="relative">
+					<button
+						type="button"
+						class="rounded-md px-2 py-1 hover:bg-slate-100"
+						onclick={() => (helpOpen = !helpOpen)}
+					>
+						Help
+					</button>
 
-			<NavigationMenu.Item>
-				<NavigationMenu.Link>
-					{#snippet child()}
-						<a href={resolve('/(public)/how-it-works')} class={navigationMenuTriggerStyle()}
-							>How It Works</a
-						>
-					{/snippet}
-				</NavigationMenu.Link>
-			</NavigationMenu.Item>
+					{#if helpOpen}
+						<div class="absolute left-0 mt-1 w-64 rounded-md border border-slate-200 bg-white">
+							<div class="px-3 py-2 text-xs font-medium text-slate-400 uppercase">Support</div>
+							<a href="/faq" class="block px-3 py-2 hover:bg-slate-50">
+								Frequently asked questions
+							</a>
+							<a href="/privacy-policy" class="block px-3 py-2 hover:bg-slate-50">
+								Privacy policy
+							</a>
+							<a href="/terms-and-condition" class="block px-3 py-2 hover:bg-slate-50">
+								Terms and conditions
+							</a>
+						</div>
+					{/if}
+				</div>
+			</div>
 
-			<!-- <NavigationMenu.Item class="hidden md:block">
-				<NavigationMenu.Trigger>List</NavigationMenu.Trigger>
-				<NavigationMenu.Content>
-					<ul class="grid w-[300px] gap-4 p-2">
-						<li>
-							<NavigationMenu.Link href="##">
-								<div class="font-medium">Components</div>
-								<div class="text-muted-foreground">Browse all components in the library.</div>
-							</NavigationMenu.Link>
-							<NavigationMenu.Link href="##">
-								<div class="font-medium">Documentation</div>
-								<div class="text-muted-foreground">Learn how to use the library.</div>
-							</NavigationMenu.Link>
-							<NavigationMenu.Link href="##">
-								<div class="font-medium">Blog</div>
-								<div class="text-muted-foreground">Read our latest blog posts.</div>
-							</NavigationMenu.Link>
-						</li>
-					</ul>
-				</NavigationMenu.Content>
-			</NavigationMenu.Item> -->
-			<!-- <NavigationMenu.Item class="hidden md:block">
-				<NavigationMenu.Trigger>Simple</NavigationMenu.Trigger>
-				<NavigationMenu.Content>
-					<ul class="grid w-[200px] gap-4 p-2">
-						<li>
-							<NavigationMenu.Link href="##">Components</NavigationMenu.Link>
-							<NavigationMenu.Link href="##">Documentation</NavigationMenu.Link>
-							<NavigationMenu.Link href="##">Blocks</NavigationMenu.Link>
-						</li>
-					</ul>
-				</NavigationMenu.Content>
-			</NavigationMenu.Item> -->
-
-			<NavigationMenu.Item>
-				<NavigationMenu.Trigger>Help</NavigationMenu.Trigger>
-				<NavigationMenu.Content>
-					<ul class="grid gap-2 p-2 md:w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]">
-						{@render ListItem({
-							href: '/faq',
-							title: 'Frequently asked Questions',
-							content: ''
-						})}
-						{@render ListItem({
-							href: '/privacy-policy',
-							title: 'Privacy Policy',
-							content: ''
-						})}
-						{@render ListItem({
-							href: '/terms-and-condition',
-							title: 'Terms and Condition',
-							content: ''
-						})}
-					</ul>
-				</NavigationMenu.Content>
-			</NavigationMenu.Item>
-			<NavigationMenu.Item>
-				<NavigationMenu.Link href={resolve('/(public)/signin')}>Sign in</NavigationMenu.Link>
-			</NavigationMenu.Item>
-			<NavigationMenu.Item>
-				<NavigationMenu.Link href={resolve('/(public)/signup')}>Sign up</NavigationMenu.Link>
-			</NavigationMenu.Item>
-		</NavigationMenu.List>
-	</NavigationMenu.Root>
-</div>
+			<div class="flex items-center gap-3">
+				<a href={resolve('/(public)/signin')} class="rounded-md px-2 py-1 hover:bg-slate-100">
+					Sign in
+				</a>
+				<a
+					href={resolve('/(public)/signup')}
+					class="rounded-md border border-slate-300 px-2 py-1 hover:bg-slate-50"
+				>
+					Sign up
+				</a>
+			</div>
+		</nav>
+	</div>
+</header>

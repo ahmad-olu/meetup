@@ -1,183 +1,121 @@
 <script lang="ts">
 	import '../../app.css';
-	import favicon from '$lib/assets/favicon.svg';
-	import * as NavigationMenu from '$lib/components/ui/navigation-menu/index.js';
-	import { cn } from '$lib/utils.js';
-	import { navigationMenuTriggerStyle } from '$lib/components/ui/navigation-menu/navigation-menu-trigger.svelte';
-	import type { HTMLAttributes } from 'svelte/elements';
-	import { Button, buttonVariants } from '$lib/components/ui/button/index.js';
-	import * as AlertDialog from '$lib/components/ui/alert-dialog/index.js';
-
 	import { resolve } from '$app/paths';
 
 	let { obj } = $props();
 	const user: {
 		id: string;
-		createdAt: Date;
-		updatedAt: Date;
 		email: string;
-		emailVerified: boolean;
 		name: string;
 		role: 'admin' | 'member';
-		image?: string | null | undefined | undefined;
 	} | null = $derived(obj.user);
 
-	type ListItemProps = HTMLAttributes<HTMLAnchorElement> & {
-		title: string;
-		href: string;
-		content: string;
-	};
+	let accountOpen = $state(false);
+	let adminOpen = $state(false);
 </script>
 
-{#snippet ListItem({ title, content, href, class: className, ...restProps }: ListItemProps)}
-	<li>
-		<NavigationMenu.Link>
-			{#snippet child()}
-				<a
-					{href}
-					class={cn(
-						'block space-y-1 rounded-md p-3 leading-none no-underline transition-colors outline-none select-none hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground',
-						className
-					)}
-					{...restProps}
-				>
-					<div class="text-sm leading-none font-medium">{title}</div>
-					<p class="line-clamp-2 text-sm leading-snug text-muted-foreground">
-						{content}
-					</p>
+<header class="border-b border-slate-200 bg-white">
+	<div class="mx-auto max-w-7xl px-4">
+		<nav class="flex h-14 items-center justify-between text-sm text-slate-700">
+			<div class="flex items-center gap-4">
+				<a href={resolve('/')} class="rounded-md px-2 py-1 hover:bg-slate-100"> Home </a>
+				<a href={resolve('/(protected)/my-events')} class="rounded-md px-2 py-1 hover:bg-slate-100">
+					My Events
 				</a>
-			{/snippet}
-		</NavigationMenu.Link>
-	</li>
-{/snippet}
+				<a href={resolve('/(protected)/messages')} class="rounded-md px-2 py-1 hover:bg-slate-100">
+					Messages
+				</a>
+				<a href={resolve('/notifications/')} class="rounded-md px-2 py-1 hover:bg-slate-100">
+					Notifications
+				</a>
 
-<div class="mb- mt-5 flex justify-center">
-	<NavigationMenu.Root>
-		<!-- <NavigationMenu.Root viewport={isMobile.current}> -->
-		<NavigationMenu.List class="flex-wrap">
-			<NavigationMenu.Item>
-				<NavigationMenu.Link>
-					{#snippet child()}
-						<a href={resolve('/')} class={navigationMenuTriggerStyle()}>Home</a>
-					{/snippet}
-				</NavigationMenu.Link>
-			</NavigationMenu.Item>
-			<NavigationMenu.Item>
-				<NavigationMenu.Link>
-					{#snippet child()}
-						<a href={resolve('/(protected)/my-events')} class={navigationMenuTriggerStyle()}
-							>My Events</a
+				{#if user?.role === 'admin'}
+					<div class="relative">
+						<button
+							type="button"
+							class="rounded-md px-2 py-1 hover:bg-slate-100"
+							onclick={() => (adminOpen = !adminOpen)}
 						>
-					{/snippet}
-				</NavigationMenu.Link>
-			</NavigationMenu.Item>
-			<NavigationMenu.Item>
-				<NavigationMenu.Link>
-					{#snippet child()}
-						<a href={resolve('/(protected)/messages')} class={navigationMenuTriggerStyle()}
-							>Messages</a
-						>
-					{/snippet}
-				</NavigationMenu.Link>
-			</NavigationMenu.Item>
-			<NavigationMenu.Item>
-				<NavigationMenu.Link>
-					{#snippet child()}
-						<a href={resolve('/notifications/')} class={navigationMenuTriggerStyle()}
-							>Notifications 🔔</a
-						>
-					{/snippet}
-				</NavigationMenu.Link>
-			</NavigationMenu.Item>
-			<NavigationMenu.Item>
-				<!-- <NavigationMenu.Link>
-					{#snippet child()}
-						<a href={resolve('/profile')} class={navigationMenuTriggerStyle()}>Account 👤</a>
-					{/snippet}
-				</NavigationMenu.Link> -->
-				<NavigationMenu.Trigger>Account 👤</NavigationMenu.Trigger>
-				<NavigationMenu.Content>
-					<ul class="grid gap-2 p-2 md:w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]">
-						{@render ListItem({
-							href: resolve('/(protected)/profile'),
-							title: 'view Profile',
-							content: ''
-						})}
-						{@render ListItem({
-							href: resolve('/(protected)/profile/edit'),
-							title: 'Edit Profile',
-							content: ''
-						})}
-						{@render ListItem({
-							href: resolve('/donations/history/'),
-							title: 'Donations',
-							content: ''
-						})}
-						{@render ListItem({
-							href: resolve('/settings/'),
-							title: 'Settings',
-							content: ''
-						})}
-						{@render ListItem({
-							href: '/help',
-							title: 'Help & Support',
-							content: ''
-						})}
-					</ul>
-				</NavigationMenu.Content>
-			</NavigationMenu.Item>
-			<NavigationMenu.Item>
-				{#if user}
-					<AlertDialog.Root>
-						<AlertDialog.Trigger class={buttonVariants({ variant: 'destructive' })}>
-							Sign out
-						</AlertDialog.Trigger>
-						<AlertDialog.Content>
-							<AlertDialog.Header>
-								<AlertDialog.Title>Are you absolutely sure?</AlertDialog.Title>
-								<AlertDialog.Description>This action cannot be undone.</AlertDialog.Description>
-							</AlertDialog.Header>
-							<AlertDialog.Footer>
-								<AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
-								<form action="">
-									<Button type="submit">Continue</Button>
-								</form>
-							</AlertDialog.Footer>
-						</AlertDialog.Content>
-					</AlertDialog.Root>
-				{:else}
-					<NavigationMenu.Link href={resolve('/(public)/signin')}>Sign in</NavigationMenu.Link>
+							Admin
+						</button>
+
+						{#if adminOpen}
+							<div class="absolute left-0 mt-1 w-56 rounded-md border border-slate-200 bg-white">
+								<div class="px-3 py-2 text-xs font-medium text-slate-400 uppercase">
+									Administration
+								</div>
+								<a href={resolve('/admin/verifications')} class="block px-3 py-2 hover:bg-slate-50">
+									Verifications
+								</a>
+								<a href={resolve('/admin/reports')} class="block px-3 py-2 hover:bg-slate-50">
+									Reported Events
+								</a>
+								<a href={resolve('/admin/events')} class="block px-3 py-2 hover:bg-slate-50">
+									All Events
+								</a>
+								<a href={resolve('/admin/analytics')} class="block px-3 py-2 hover:bg-slate-50">
+									Analytics
+								</a>
+							</div>
+						{/if}
+					</div>
 				{/if}
-			</NavigationMenu.Item>
+			</div>
 
-			{#if user?.role === 'admin'}
-				<NavigationMenu.Item>
-					<NavigationMenu.Trigger>Admin</NavigationMenu.Trigger>
-					<NavigationMenu.Content>
-						<ul class="grid gap-2 p-2 md:w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]">
-							{@render ListItem({
-								href: resolve('/admin/verifications'),
-								title: 'Verifications',
-								content: ''
-							})}
-							{@render ListItem({
-								href: resolve('/admin/reports'),
-								title: 'Reported Events',
-								content: ''
-							})}
-							{@render ListItem({
-								href: resolve('/admin/events'),
-								title: 'All Events',
-								content: ''
-							})}
-							{@render ListItem({
-								href: resolve('/admin/analytics'),
-								title: 'Analytics',
-								content: ''
-							})}
-						</ul>
-					</NavigationMenu.Content>
-				</NavigationMenu.Item>{/if}
-		</NavigationMenu.List>
-	</NavigationMenu.Root>
-</div>
+			<div class="flex items-center gap-3">
+				{#if user}
+					<div class="relative">
+						<button
+							type="button"
+							class="rounded-md px-2 py-1 hover:bg-slate-100"
+							onclick={() => (accountOpen = !accountOpen)}
+						>
+							Account
+						</button>
+
+						{#if accountOpen}
+							<div class="absolute right-0 mt-1 w-60 rounded-md border border-slate-200 bg-white">
+								<div class="px-3 py-2 text-xs font-medium text-slate-400 uppercase">Account</div>
+								<a href={resolve('/(protected)/profile')} class="block px-3 py-2 hover:bg-slate-50">
+									View profile
+								</a>
+								<a
+									href={resolve('/(protected)/profile/edit')}
+									class="block px-3 py-2 hover:bg-slate-50"
+								>
+									Edit profile
+								</a>
+
+								<div class="px-3 py-2 text-xs font-medium text-slate-400 uppercase">
+									Preferences
+								</div>
+								<a href={resolve('/donations/history/')} class="block px-3 py-2 hover:bg-slate-50">
+									Donations
+								</a>
+								<a href={resolve('/settings/')} class="block px-3 py-2 hover:bg-slate-50">
+									Settings
+								</a>
+								<a href="/help" class="block px-3 py-2 hover:bg-slate-50"> Help & Support </a>
+
+								<div class="mt-1 border-t border-slate-200">
+									<form method="post" action="/logout">
+										<button
+											type="submit"
+											class="w-full px-3 py-2 text-left text-slate-600 hover:bg-slate-50"
+										>
+											Sign out
+										</button>
+									</form>
+								</div>
+							</div>
+						{/if}
+					</div>
+				{:else}
+					<a href={resolve('/(public)/signin')} class="rounded-md px-2 py-1 hover:bg-slate-100">
+						Sign in
+					</a>
+				{/if}
+			</div>
+		</nav>
+	</div>
+</header>
