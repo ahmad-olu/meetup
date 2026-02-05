@@ -43,13 +43,3 @@ services:
       MP_DATABASE: /data/mailpit.db
       MP_SMTP_AUTH_ACCEPT_ANY: 1
       MP_SMTP_AUTH_ALLOW_INSECURE: 1
-
-  qdrant:
-    image: qdrant/qdrant
-    # container_name: qdrant
-    ports:
-      - "5783:6333"
-      - "5784:6334"
-    volumes:
-      - ./qdrant_storage:/qdrant/storage:z
-    restart: unless-stopped

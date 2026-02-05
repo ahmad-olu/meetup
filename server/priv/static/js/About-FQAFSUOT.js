@@ -1,0 +1,1 @@
+import{c as i,f as o,g as n}from"./chunk-FYVO2M4V.js";var t=i(n(),1);function e({title:r}){return(0,t.jsxs)("div",{children:[(0,t.jsx)("h1",{children:r}),(0,t.jsx)(o,{href:"/",children:"Back to Home"})]})}export{e as default};

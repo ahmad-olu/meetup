@@ -4,24 +4,21 @@ import { fileURLToPath } from "url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-const baseDir = resolve(__dirname, "../../../");
+const baseDir = resolve(__dirname, "../../../meet_n_link");
 
 // directories relative to auth
-const targets = ["logistics", "normal","seller"];
+const targets = ["logistics", "normal", "seller"];
 
-for (const dir of targets) {
-  const targetPath = resolve(baseDir, dir);
-  console.log(`🔍 Running introspect in ${targetPath}...`);
+console.log(`🔍 Running introspect in ${baseDir}...`);
 
-  try {
-    execSync(`npx drizzle-kit introspect`, {
-      cwd: targetPath,
-      stdio: "inherit",
-    });
-  } catch (err) {
-    console.error(`❌ Failed to introspect in ${targetPath}`);
-    console.error(err.message);
-  }
+try {
+  execSync(`npx drizzle-kit introspect`, {
+    cwd: baseDir,
+    stdio: "inherit",
+  });
+} catch (err) {
+  console.error(`❌ Failed to introspect in ${baseDir}`);
+  console.error(err.message);
 }
 
 console.log("✅ All introspections complete!");

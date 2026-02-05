@@ -1,4 +1,3 @@
-import { relations } from "drizzle-orm";
 import { boolean, pgEnum, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 
 /* =========================
@@ -24,7 +23,13 @@ export const user = pgTable("user", {
   image: text("image"),
   role: userRole("role").default("user").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => new Date())
+    .notNull(),
+  banned: boolean("banned").default(false),
+  banReason: text("ban_reason"),
+  banExpires: timestamp("ban_expires"),
 });
 
 export type User = typeof user.$inferSelect;
@@ -38,13 +43,17 @@ export const session = pgTable("session", {
   expiresAt: timestamp("expires_at").notNull(),
   token: text("token").notNull().unique(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => new Date())
+    .notNull(),
   ipAddress: text("ip_address"),
   userAgent: text("user_agent"),
   userId: text("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
   activeOrganizationId: text("active_organization_id"),
+  impersonatedBy: text("impersonated_by"),
 });
 
 /* =========================
@@ -66,7 +75,10 @@ export const account = pgTable("account", {
   scope: text("scope"),
   password: text("password"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => new Date())
+    .notNull(),
 });
 
 /* =========================
@@ -79,7 +91,10 @@ export const verification = pgTable("verification", {
   value: text("value").notNull(),
   expiresAt: timestamp("expires_at").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => new Date())
+    .notNull(),
 });
 
 /* =========================
@@ -119,21 +134,6 @@ export type Member = typeof member.$inferSelect & {
    RELATIONS
 ========================= */
 
-export const organizationRelations = relations(organization, ({ many }) => ({
-  members: many(member),
-}));
-
-export const memberRelations = relations(member, ({ one }) => ({
-  organization: one(organization, {
-    fields: [member.organizationId],
-    references: [organization.id],
-  }),
-  user: one(user, {
-    fields: [member.userId],
-    references: [user.id],
-  }),
-}));
-
 /* =========================
    INVITATION TABLE
 ========================= */
@@ -164,6 +164,4 @@ export const schema = {
   organization,
   member,
   invitation,
-  organizationRelations,
-  memberRelations,
 };

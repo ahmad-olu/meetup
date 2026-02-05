@@ -6,6 +6,6 @@ import { Pool } from "pg";
 export const db = drizzle(process.env.DATABASE_URL!);
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL! });
-const database = drizzle(pool, { schema });
+const database = drizzle({ schema, client: pool });
 
 export { database, pool };

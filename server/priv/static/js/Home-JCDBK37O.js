@@ -1,0 +1,1 @@
+import{c as t,f as e,g as n}from"./chunk-FYVO2M4V.js";var o=t(n(),1);function p({message:r,user:u,count:i}){return(0,o.jsxs)("div",{children:[(0,o.jsxs)("h1",{children:["Welcome ",u,"!"]}),(0,o.jsx)("p",{children:r}),(0,o.jsxs)("p",{children:["Count: ",i]}),(0,o.jsx)(e,{href:"/about",children:"Go to About"})]})}export{p as default};

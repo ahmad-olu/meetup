@@ -1,6 +1,6 @@
 import { betterAuth, logger } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { createAuthMiddleware } from "better-auth/plugins";
+import { admin, createAuthMiddleware } from "better-auth/plugins";
 import { db } from "./db"; // your drizzle instance
 import * as schema from "./db/schema";
 import { eq, sql } from "drizzle-orm";
@@ -12,7 +12,12 @@ export const auth = betterAuth({
     provider: "pg",
     schema: schema,
   }),
-  plugins: [],
+  plugins: [
+    admin(),
+    schema.organization({
+      organizationHooks: {},
+    }),
+  ],
   session: {},
   user: {
     changeEmail: {
