@@ -3,8 +3,11 @@
 	import { goto } from '$app/navigation';
 	import type { PageData } from './$types';
 	import { SvelteURLSearchParams } from 'svelte/reactivity';
+	import LocationAutocomplete from './LocationAutocomplete.svelte';
 
 	let { data } = $props();
+
+	let selectedLocationId = $state(data.filters.locationId || '');
 
 	function updateFilters(key: string, value: string) {
 		const params = new SvelteURLSearchParams($page.url.searchParams);
@@ -18,6 +21,7 @@
 	}
 
 	function clearFilters() {
+		selectedLocationId = '';
 		goto('/events');
 	}
 
@@ -59,7 +63,7 @@
 		<aside class="filters-panel">
 			<div class="panel-header">
 				<h3>Filters</h3>
-				{#if data.filters.status || data.filters.locationId || data.filters.categoryId || data.filters.requiresFunding !== undefined}
+				{#if data.filters.status || selectedLocationId || data.filters.categoryId || data.filters.requiresFunding !== undefined}
 					<button class="btn-link" onclick={clearFilters}>Clear all</button>
 				{/if}
 			</div>
@@ -93,19 +97,27 @@
 				</select>
 			</div>
 
-			<!-- <div class="filter-group">
+			<div class="filter-group">
 				<label for="location">Location</label>
-				<select
-					id="location"
-					value={data.filters.locationId || ''}
-					onchange={(e) => updateFilters('location', e.currentTarget.value)}
-				>
-					<option value="">All Locations</option>
-					{#each data.locations as location (location.id)}
-						<option value={location.id}>{location.fullLocation || location.city}</option>
-					{/each}
-				</select>
-			</div> -->
+				<LocationAutocomplete
+					bind:value={selectedLocationId}
+					placeholder="Search for a location..."
+					onselect={(location) => {
+						updateFilters('location', location.id);
+					}}
+				/>
+				{#if selectedLocationId}
+					<button
+						class="clear-location-btn"
+						onclick={() => {
+							selectedLocationId = '';
+							updateFilters('location', '');
+						}}
+					>
+						Clear location filter
+					</button>
+				{/if}
+			</div>
 
 			<div class="filter-group">
 				<label for="funding">Funding Status</label>
@@ -426,6 +438,21 @@
 		outline: none;
 		border-color: #2563eb;
 		box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+	}
+
+	.clear-location-btn {
+		margin-top: 0.5rem;
+		background: none;
+		border: none;
+		color: #ef4444;
+		font-size: 0.8125rem;
+		cursor: pointer;
+		padding: 0;
+		text-decoration: underline;
+	}
+
+	.clear-location-btn:hover {
+		color: #dc2626;
 	}
 
 	.events-content {
